@@ -18,6 +18,7 @@ def edit_ssh_port_config(config_file_path, new_port):
             old_port = line.strip().split()[-1]
             config_lines[i] = f'Port {new_port}\n'
             port_modified = True
+            print(f"Port number changed from {old_port} to {new_port}")
             break
 
     if not port_modified:
@@ -48,6 +49,7 @@ def start_stop_ssh_service(action):
 
 def port_change_process():
     """Initiate the port change process."""
+    global port_change_flag
     while True:
         if port_change_flag:
             new_port = generate_random_port()
@@ -61,5 +63,22 @@ if __name__ == "__main__":
     ssh_backup_file_path = '/etc/ssh/sshd_config.bak'
     port_change_flag = True
 
+    # Backup the SSH configuration file
     backup_config_file(ssh_config_file_path, ssh_backup_file_path)
-    port_change_process()
+
+    # Ask user for action (start or stop)
+    while True:
+        user_input = input("Enter 'start' to begin port randomization process or 'stop' to stop the process: ")
+        if user_input.lower() == 'start':
+            # Start SSH service
+            start_stop_ssh_service("start")
+            # Start port change process
+            port_change_process()
+        elif user_input.lower() == 'stop':
+            # Stop port change process
+            port_change_flag = False
+            # Stop SSH service
+            start_stop_ssh_service("stop")
+            break
+        else:
+            print("Invalid input. Please enter 'start' or 'stop'.")
